@@ -38,3 +38,5 @@ print(db.getRelProps("10G", "E", "A"))
 
 print(db.getRelationships("A"))
 print(db.getRelationships("F"))
+
+db.traverse("A", "E")

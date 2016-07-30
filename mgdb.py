@@ -8,8 +8,7 @@ list of relationships with their own properties and pointers to other nodes.
 Both nodes and relationships can contain key value properties, stored in the
 dictionary data structure.
 """
-from collections import defaultdict
-
+import queue
 
 class GraphDB:
     """
@@ -220,4 +219,35 @@ class GraphDB:
         if set((startNode, endNode)).issubset(self.nodes):
 
             if ttype == "BFS":
-                print("BFS")
+                return self._traverseBFS(startNode, endNode, rels=None)
+        else:
+            raise Exception("Nodes", startNode, endNode, "not found in DB")
+
+    def _traverseBFS(self, startNode, endNode, rels=None):
+        """
+        Breadth First Traversal of Graph searching for endNode, starting at startNode
+
+        Inputs:
+            startNode => Start Traversal from this node
+            endNode => Search for this node
+
+        Returns: tuple of (found [bool], path[list])
+        """
+
+        # Initiate a queue with a sane maxsize value
+        Q = queue.LifoQueue(maxsize=10000)
+
+        # Add startNode to Queue
+        Q.put(startNode)
+
+        # Create a dictionary of visited nodes
+        visited = dict()
+
+        # Add startNode to visited along with distance and null parent value
+        visited[startNode]["distance"] = 0
+        visited[startNode]["parent"] = None
+
+        while Q.full():
+
+            cnode = Q.get()
+            print(cnode)
