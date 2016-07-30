@@ -72,12 +72,11 @@ class MiniGraphDB:
 
     def mergeNodeProperties(self, name, props):
         """
-        Merge node properties dictionary. Updates existing properties if the exist, or create new
-        ones if they don't
+        Merge node properties dictionary. Updates existing properties if the
+        exist, or create new ones if they don't
 
-        Inputs:
-        - name: name of node
-        - props: dictionary of key/values to merge
+        Inputs: name => name of node
+                props => dictionary of key/values to merge
         """
 
         if name in self.nodes:
@@ -93,7 +92,7 @@ class MiniGraphDB:
         """
         Get the properties for a node as a dict()
 
-        Inputs: name - Name of node
+        Inputs: name => Name of node
 
         Returns: dict() of properties
         """
@@ -115,11 +114,10 @@ class MiniGraphDB:
         """
         Adds a relationship 'name' from srcnode to dstnode
 
-        Inputs:
-        Inputs: name: Relationship Name
-                srcNode: Source Node Name
-                dstNode: Destination Node Name
-                weight: Optional Weight Value, defaults to 1
+        Inputs: name => Relationship Name
+                srcNode => Source Node Name
+                dstNode => Destination Node Name
+                weight => Optional Weight Value, defaults to 1
         """
 
         # Ensure both nodes exist in DB
@@ -150,8 +148,8 @@ class MiniGraphDB:
 
     def mergeRelProperties(self, name, srcNode, dstNode, props):
         """
-        Merge relationship properties dictionary. Updates existing properties if the exist, or
-        creates new ones if they don't.
+        Merge relationship properties dictionary. Updates existing properties if
+        the exist, or creates new ones if they don't.
 
         Inputs: name => name of relationship
                 srcNode => Source Node of Relationship

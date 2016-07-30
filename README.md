@@ -107,6 +107,106 @@ Checking for Loops Starting at A: loopdb.hasloop("A")
 Done for now! Please enjoy...
 ```
 
+## Python Documentation
+```
+NAME
+    mgdb
+
+DESCRIPTION
+    MiniGraphDB Python3.4+ module for implementing a minimal Graph Database in
+    memory. See the included README.md for more information.
+
+CLASSES
+    builtins.object
+        MiniGraphDB
+
+    class MiniGraphDB(builtins.object)
+     |  MiniGraphDB is a simple implementation of a directed graph of nodes and
+     |  relationships (edges and vertices), each with properties, along with both
+     |  breadth-first and depth-first traversal algorithms.
+     |
+     |  Methods defined here:
+     |
+     |  __init__(self)
+     |      Initializes GraphDB, creates nodes dict()
+     |
+     |  addNode(self, name, props=None)
+     |      Adds a node to the database
+     |
+     |      Inputs: name => Unique name of node
+     |              props => Optional node properties dictionary
+     |
+     |  addRelationship(self, name, srcNode, dstNode, props=None, weight=1)
+     |      Adds a relationship 'name' from srcnode to dstnode
+     |
+     |      Inputs: name => Relationship Name
+     |              srcNode => Source Node Name
+     |              dstNode => Destination Node Name
+     |              weight => Optional Weight Value, defaults to 1
+     |
+     |  getNodeProps(self, name)
+     |      Get the properties for a node as a dict()
+     |
+     |      Inputs: name => Name of node
+     |
+     |      Returns: dict() of properties
+     |
+     |  getRelProps(self, name, srcNode, dstNode)
+     |      Get the properties for a relationship as a dict()
+     |
+     |      Inputs: name => Name of relationship
+     |              srcNode => Source Node
+     |              dstNode => Destination Node
+     |
+     |      Returns: dict() of properties
+     |
+     |  getRelationships(self, name)
+     |      Returns list of tuple relationships node (name) has.
+     |
+     |      Input: name => Name of node
+     |
+     |      Returns: [(relname, dstNode),{...}]
+     |
+     |  hasloop(self, startNode)
+     |      Calls _traverseBFS with an unreachable endNode, looking for any nodes
+     |      that have been visited. If it finds a visited node, there must be a loop.
+     |
+     |      Input: startNode => Start searching for loops from here
+     |
+     |      Returns: (bool, [path])
+     |
+     |  mergeNodeProperties(self, name, props)
+     |      Merge node properties dictionary. Updates existing properties if the
+     |      exist, or create new ones if they don't
+     |
+     |      Inputs: name => name of node
+     |              props => dictionary of key/values to merge
+     |
+     |  mergeRelProperties(self, name, srcNode, dstNode, props)
+     |      Merge relationship properties dictionary. Updates existing properties if
+     |      the exist, or creates new ones if they don't.
+     |
+     |      Inputs: name => name of relationship
+     |              srcNode => Source Node of Relationship
+     |              dstNode => Destination Node of Relationship
+     |              props => dictionary of key/values to merge
+     |
+     |  traverse(self, startNode, endNode, allowRels=None, algo='BFS')
+     |      Traverse Graph, starting at startNode until endNode is found.
+     |      Defaults to a Breadth First Search, but can also perform a
+     |      depth first search if desired.
+     |
+     |      Inputs: startNode => Start Traversal from this node
+     |              endNode => Search for path to endNode
+     |              allowRels => Optional List of relationship names to traverse
+     |                           None traverses all relationship names
+     |              algo => Type of search (BFS, DFS), defaults to BFS
+     |
+     |      Returns: tuple (found (bool), path (dict))
+     |
+     |  ----------------------------------------------------------------------
+```
+
 ## Motivation
 
 MiniGraphDB was written to explore what would be required to create a Graph
@@ -159,32 +259,41 @@ first path found.
 ### hasloop() Path Representation
 
 Currently hasloop() only detects a loop, and does not return the loop structure.
-_traverseBFS() could be modified to return the found loop with a few
-modifications.
+_traverseBFS() could be modified to return the found loop with a recursive call
+to _traverseBFS() from startNode to the node the loop was found around, as well
+as a _traverseBFS() call where startNode and endNode are equal to the node the
+loop was found around.
 
 ### Merge Methods
 
 Adding mergeNode and mergeRelationship would create or merge existing nodes
-and/or relationships along with updated/additional properties.
+and/or relationships along with updating/adding properties to nodes and
+relationships.
 
 ### Where Clauses
 
-Traversal algorithms could be modified to check whether properties on nodes or
-relationships meet certain criteria, such as (==, !=, <, >, etc).
+Traversal algorithms could be modified to check whether properties on
+nodes/relationships meet certain criteria, such as (==, !=, <, >, =~, etc).
 
 ### Adopt the Cypher Query Lanuage
 
 It's possible to implement a subset of the Cypher query language to allow for
-easy graph queries. Cypher is an easy to use graph query language used by Neo4j,
-and is available open-source for all implementation of Graph Databases:
-[Open Cypher](http://www.opencypher.org)
+easier graph queries. Cypher is a friendly graph query language used by Neo4j,
+and is available open-source for all implementation of Graph Databases: [Open
+Cypher](http://www.opencypher.org)
+
+### REST API
+
+A REST API could be added via Flask to allow remote inserts into the database as
+well as returning all queried data as JSON.
 
 ### Optimization
 
 It's possible to cache traversals on graphs that do not change often. This could
 be accomplished with the @functools.lru_cache decorator along with a call to
 invalidate the cache as the graph changes. While there are many avenues of
-optimization, none will add clarity to MiniGraphDB.
+optimization, none would add clarity to MiniGraphDB, which was the primary goal
+of this implementation.
 
 ## Contributors
 * Jonathan Yantis ([yantisj](https://github.com/yantisj))
