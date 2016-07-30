@@ -156,7 +156,7 @@ first path found.
 ### hasloop() Path Representation
 
 Currently hasloop() only detects a loop, and does not return the loop structure.
-_traverseBFS could be modified to return the found loop with a few
+_traverseBFS() could be modified to return the found loop with a few
 modifications.
 
 ### Merge Methods
@@ -167,7 +167,7 @@ and/or relationships along with updated/additional properties.
 ### Where Clauses
 
 Traversal algorithms could be modified to check whether properties on nodes or
-relationships meet certain criteria, such as (==, !=, <, >, etc)
+relationships meet certain criteria, such as (==, !=, <, >, etc).
 
 ### Adopt the Cypher Query Lanuage
 
