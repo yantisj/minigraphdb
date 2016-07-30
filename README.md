@@ -22,7 +22,7 @@ in nodes is a dict() itself. New nodes are initialized with an empty
 nodes[name]['__rels'] dictionary of outgoing relationships. Each relationship
 key in \_\_rels is a tuple of (relationship_name, dstNode).
 
-### Relationship data structure: 
+### Relationship data structure
 
 Relationships are stored as dicts and added to the srcNode's __rels dictionary.
 Relationship dicts() keep track of __src, __dst and __weight for future
@@ -227,17 +227,6 @@ could be saved to disk, and then recovered at the next runtime. This would not
 be the most efficient storage method, but for the purposes of this program, it
 should suffice.
 
-### Custom Exceptions
-
-Currently, all exceptions are generic. Specific Exceptions should be added for
-cases such as NoNodeFound or NoRelationshipFound.
-
-### Proper Test Suite
-
-MiniGraphDB could include py-tests to unit tests as well as larger tests on the
-database overall, but this would require installing modules outside of the
-standard libraries.
-
 ### Undirected Traversals
 
 It should be easy to reverse the graph traversal direction as well as add
@@ -262,7 +251,7 @@ Currently hasloop() only detects a loop, and does not return the loop structure.
 _traverseBFS() could be modified to return the found loop with a recursive call
 to _traverseBFS() from startNode to the node the loop was found around, as well
 as a _traverseBFS() call where startNode and endNode are equal to the node the
-loop was found around.
+loop was found at, revealing the looped path.
 
 ### Merge Methods
 
@@ -286,6 +275,17 @@ Cypher](http://www.opencypher.org)
 
 A REST API could be added via Flask to allow remote inserts into the database as
 well as returning all queried data as JSON.
+
+### Custom Exceptions
+
+Currently, all exceptions are generic. Specific Exceptions could be added for
+cases such as NoNodeFound or NoRelationshipFound.
+
+### Proper Test Suite
+
+MiniGraphDB could include py-tests to unit test as well as run larger tests on
+the database, but this would require installing modules outside of the standard
+libraries.
 
 ### Optimization
 
