@@ -4,9 +4,10 @@
 
 MiniGraphDB implements a minimal directed graph database in memory via Python3.
 Nodes are stored as dictionary data structures. Outgoing relationships are
-stored on each node as a nested dictionary __rels of relationships with their
-own properties and pointers to other nodes. Both nodes and relationships may
-contain key value properties, stored in their respective dict data structures.
+stored on each node as a nested dictionary nodes[node][__rels] of relationships
+with their own properties and pointers to other nodes. Both nodes and
+relationships may contain key/value properties, stored in their respective dict
+data structures.
 
 ## Sample Graph
 
@@ -16,24 +17,26 @@ contain key value properties, stored in their respective dict data structures.
 
 ### Node data structure
 
-nodes dict() holds all nodes. Each node in nodes is a dict() itself. New nodes
-are initialized with an empty nodes[name]['__rels'] dictionary of outgoing
-relationships. Each relationship key in \_\_rels is a tuple of (relationship_name, dstNode).
+The nodes dict() holds all nodes for each instance of a MiniGraphDB. Each node
+in nodes is a dict() itself. New nodes are initialized with an empty
+nodes[name]['__rels'] dictionary of outgoing relationships. Each relationship
+key in \_\_rels is a tuple of (relationship_name, dstNode).
 
 ### Relationship data structure: 
 
 Relationships are stored as dicts and added to the srcNode's __rels dictionary.
-We keep track of __src, __dst and __weight for future capabilities, but
-currently the (relationship_name, dstNode) key in __rels suffices for all
-current needs.
+Relationship dicts() keep track of __src, __dst and __weight for future
+capabilities, but currently the (relationship_name, dstNode) key in __rels
+suffices.
 
 ### Traversals
 
-MiniGraphDB supports both breadth-first and depth-first traversals on the graph.
+MiniGraphDB supports both breadth-first and depth-first traversals across the
+graph.
 
 ## Usage
 
-To load the sample graph, test queries and well as run traversal algorithms,
+To load the sample graph, test queries, as well as run traversal algorithms,
 execute ./testmgdb.py on any machine with a Python3.4+ interpreter installed.
 There are no dependencies outside the standard libraries.
 
