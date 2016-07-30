@@ -3,6 +3,10 @@
 import pprint
 import mgdb
 
+
+print("Loading Database nodes and relationships based " +
+      "on sample graph...", end="")
+
 # Create a new Graph Database Instance
 db = mgdb.GraphDB()
 
@@ -13,6 +17,8 @@ db.addNode("C", {"type": "router", "model": "N7700"})
 db.addNode("D", {"type": "switch", "model": "N5600"})
 db.addNode("E")
 db.addNode("F")
+db.addNode("G")
+db.addNode("H")
 
 # Add some properties to existing nodes
 db.mergeNodeProperties("E", {"type": "router", "model": "N7700"})
@@ -30,56 +36,63 @@ db.addRelationship("1G", "D", "B", weight=10, props={"MTU": "9000"})
 db.addRelationship("10G", "D", "E", props={"MTU": "9000"})
 db.addRelationship("10G", "E", "A", props={"MTU": "9000"})
 db.addRelationship("1G", "E", "A", props={"MTU": "1500"})
-db.addRelationship("1G", "A", "F", props={"MTU": "1500"})
+db.addRelationship("1G", "F", "A", props={"MTU": "1500"})
+db.addRelationship("1G", "A", "G", props={"MTU": "1500"})
+db.addRelationship("1G", "G", "H", props={"MTU": "1500"})
 
 # Update properties on an existing relationship
 db.mergeRelProperties("10G", "A", "B", {"type": "Ethernet", "MTU": "9000"})
 
+print("Success!\n")
+
 
 ## Various tests of graph database
-
+print("Testing MGDB with various queries and traversals")
 # Instantiate a pretty printer
 pp = pprint.PrettyPrinter(indent=2, width=4, depth=1)
 
-print("\nNode A Type and Model values")
-pp.pprint([db.nodes["A"]["type"], db.nodes["A"]["model"]])
+print('\nNode A Property "type": db.nodes["A"]["type"] ')
+pp.pprint({"Type": db.nodes["A"]["type"]})
 
-print("\nNode A Property Dump")
+print("\nNode A Property Dump: getNodeProps(A)")
 pp.pprint(db.getNodeProps("A"))
 
-print("\nRelationship r Property Dump: (D)-[r:1G]->(B)")
+print("\nRelationship (D)-[rel:1G]->(B) getRelProps Dump: ")
 pp.pprint(db.getRelProps("1G", "D", "B"))
 
-print("\nA's Relationships")
+print("\ngetRelationships(A)")
 print(db.getRelationships("A"))
 
-print("\nF's Relationships (null)")
-print(db.getRelationships("F"))
+print("\ngetRelationships(E)")
+print(db.getRelationships("E"))
 
-print("\nTraverse using BFS from A -> E on relationships [10G, 1G]")
+print("\nBFS Traversal A -> E on relationships [10G, 1G]")
 print(db.traverse("A", "E", allowRels=["1G", "10G"]))
 
-print("\nTraverse using DFS from A -> E on any relationship type")
+print("\nDFS Traversal A -> E on any relationship type")
 print(db.traverse("A", "E", algo="DFS"))
 
-print("\nTraverse using BFS from A -> D on relationship [10G] only")
-print(db.traverse("A", "D", allowRels=["10G"]))
-
-print("\nTraverse using BFS from E -> F on any relationship type")
+print("\nBFS Traversal E -> F (orphaned) on any relationship type")
 print(db.traverse("E", "F"))
 
-print("\nTraverse using BFS from F -> E (orphaned) on any relationship type")
+print("\nBFS Traversal F -> E on any relationship type")
 print(db.traverse("F", "E"))
 
-print("\nTraverse using BFS from A -> A on any relationship type (always SPF)")
+print("\nBFS Traversal A -> A on any relationship type (always SPF)")
 print(db.traverse("A", "A"))
 
-print("\nTraverse using DFS from A -> A on any relationship type (path length varies)")
+print("\nDFS Traversal A -> A on any relationship type (path length varies)")
 print(db.traverse("A", "A", algo="DFS"))
 
-print("\nTraverse using BFS from A -> A on 10G links only")
-print(db.traverse("A", "A", allowRels=["10G"], algo="DFS"))
+print("\nBFS Traversal A -> A on 10G links only")
+print(db.traverse("A", "A", allowRels=["10G"], algo="BFS"))
 
-print("\nTraverse using DFS from A -> A on 1G links only")
+print("\nDFS Traversal A -> A on 1G links only")
 print(db.traverse("A", "A", allowRels=["1G"], algo="DFS"))
+
+print("\nChecking for loops starting at F")
+print(db.hasloop("F"))
+
+print("\nChecking for loops starting at G")
+print(db.hasloop("G"))
 

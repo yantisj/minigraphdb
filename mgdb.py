@@ -5,8 +5,30 @@ Minimal Graph Database (MGDB)
 Description: Implements a mini directed graph database in memory. Nodes are
 stored as dictionary data structures. Relationships are stored on each node as a
 list of relationships with their own properties and pointers to other nodes.
-Both nodes and relationships can contain key value properties, stored in the
+Both nodes and relationships can contain key value properties, stored in a
 dictionary data structure.
+
+Node data structure: nodes holds all nodes. Each node in nodes is a dict().
+New nodes are initialized with a nodes[name]['__rels'] dictionary of outgoing
+relationships. Each relationship key is a tuple of (relationship_name, dstNode)
+
+Relationship data structure: Relationships are stored as dictionaries and added
+to the srcNode's __rels dictionary. We keep track of __src, __dst and __weight for 
+future capabilities.
+
+Future of MGDB:
+
+Undirected Traversals: It should be easy to reverse the graph traversal direction
+as well as add directionless graph traversal by adding an __inrels dictionary to
+each node to keep track of all incoming relationships. The traversal algoriths
+could be modified to traverse in either/both directions.
+
+Where Clauses: Traversal algorithms could be modified to check whether
+properties on nodes or relationships meet certain criteria, such as (==, !=, <,
+>, etc)
+
+
+
 """
 import queue
 from collections import defaultdict
@@ -78,9 +100,9 @@ class GraphDB:
         if name in self.nodes:
             props = dict()
 
-            # Only return public properties, underscored properties are hidden
+            # Only return public properties, double underscored properties are hidden
             for p in self.nodes[name]:
-                if p[:1] != "__":
+                if p[:2] != "__":
                     props[p] = self.nodes[name][p]
 
             return props
@@ -166,9 +188,9 @@ class GraphDB:
                 rel = self.nodes[srcNode]["__rels"][(name, dstNode)]
                 props = dict()
 
-                # Only return public properties, underscored properties are hidden
+                # Only return public properties, double underscored properties are hidden
                 for p in rel:
-                    if p[:1] != "__":
+                    if p[:2] != "__":
                         props[p] = rel[p]
 
                 return props
@@ -229,13 +251,16 @@ class GraphDB:
         else:
             raise Exception("Nodes", startNode, endNode, "not found in DB")
 
-    def _traverseBFS(self, startNode, endNode, allowRels=None):
+
+    def _traverseBFS(self, startNode, endNode, allowRels=None, hasloop=False):
         """
         Breadth First Traversal of Graph searching for endNode from startNode
 
         Inputs:
             startNode => Start Traversal from this node
             endNode => Search for this node
+            allowRels => list of allowed relationship traversal names (default all)
+            hasLoop => Optional variable for use with hasLoop to detect looped graphs
 
         Returns: tuple of (found [bool], path[list])
         """
@@ -267,8 +292,12 @@ class GraphDB:
                 # Make sure we are traversing allowed relationship types
                 if allowRels is None or rname in allowRels:
 
+                    # Only searching for loops, and loop found
+                    if hasloop and adjacent in visited:
+                        return(True, self._getPath(cnode, visited) + [[cnode, rname, startNode]])
+
                     # Newly discovered node, record in visited
-                    if adjacent not in visited:
+                    elif adjacent not in visited:
                         visited[adjacent] = dict()
                         visited[adjacent]["distance"] = visited[cnode]["distance"] + 1
                         visited[adjacent]["parent"] = cnode
@@ -276,7 +305,7 @@ class GraphDB:
 
                         # Found the endNode
                         if adjacent == endNode:
-                            return (True, self.getPath(endNode, visited))
+                            return (True, self._getPath(endNode, visited))
 
                         # Enqueue all nodes that are not endNode
                         Q.put(adjacent)
@@ -286,14 +315,14 @@ class GraphDB:
                     elif adjacent == startNode == endNode:
 
                         # Return True along with path (add last leg to current path)
-                        return(True, self.getPath(cnode, visited) + [cnode, rname, startNode])
+                        return(True, self._getPath(cnode, visited) + [[cnode, rname, startNode]])
 
         # Node not found
         return(False, [])
 
 
-    def getPath(self, endNode, visited):
-        """ Returns a path from the parent node to the end node for use with BFS"""
+    def _getPath(self, endNode, visited):
+        """ Returns a path from startNode to endNode for use with BFS"""
 
         cnode = endNode
         path = []
@@ -304,6 +333,18 @@ class GraphDB:
 
         # Return reversed path
         return [hop for hop in path[::-1]]
+    
+
+    def hasloop(self, startNode):
+        """
+        Calls _traverseBFS with an unreachable endNode, looking for any nodes
+        that have been visited. If it finds a visited node, there must be a loop.
+
+        Input: startNode => Start searching for loops from here
+
+        Returns: (bool, [path])
+        """
+        return self._traverseBFS(startNode, "__INFINITY__", hasloop=True)
 
 
     def _traverseDFS(self, startNode, endNode, allowRels=None):
@@ -361,5 +402,6 @@ class GraphDB:
 
         # Node not found
         return(False, [])
+
 
 
