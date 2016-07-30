@@ -1,41 +1,14 @@
 #!/usr/bin/env python3
 """
-Minimal Graph Database (MGDB)
-
-Description: Implements a mini directed graph database in memory. Nodes are
-stored as dictionary data structures. Relationships are stored on each node as a
-list of relationships with their own properties and pointers to other nodes.
-Both nodes and relationships can contain key value properties, stored in a
-dictionary data structure.
-
-Node data structure: nodes holds all nodes. Each node in nodes is a dict().
-New nodes are initialized with a nodes[name]['__rels'] dictionary of outgoing
-relationships. Each relationship key is a tuple of (relationship_name, dstNode)
-
-Relationship data structure: Relationships are stored as dictionaries and added
-to the srcNode's __rels dictionary. We keep track of __src, __dst and __weight for 
-future capabilities.
-
-Future of MGDB:
-
-Undirected Traversals: It should be easy to reverse the graph traversal direction
-as well as add directionless graph traversal by adding an __inrels dictionary to
-each node to keep track of all incoming relationships. The traversal algoriths
-could be modified to traverse in either/both directions.
-
-Where Clauses: Traversal algorithms could be modified to check whether
-properties on nodes or relationships meet certain criteria, such as (==, !=, <,
->, etc)
-
-
-
+MiniGraphDB Python3.4+ module for implementing a minimal Graph Database in
+memory. See the included README.md for more information.
 """
 import queue
 from collections import defaultdict
 
-class GraphDB:
+class MiniGraphDB:
     """
-    GraphDB is a simple implementation of a directed graph of nodes and
+    MiniGraphDB is a simple implementation of a directed graph of nodes and
     relationships (edges and vertices), each with properties, along with both
     breadth-first and depth-first traversal algorithms.
     """
@@ -107,7 +80,7 @@ class GraphDB:
 
             return props
         else:
-            raise Exception("No node named", name, "found in database")
+            raise Exception("No node named " + name + " found in database")
 
 
     def addRelationship(self, name, srcNode, dstNode, props=None, weight=1):
@@ -195,8 +168,11 @@ class GraphDB:
 
                 return props
             else:
-                raise Exception("Nodes", srcNode, dstNode, "exist in database, but no relationship",
-                                name, "exists between them")
+                error = "Nodes {:}, {:} exist in database, but no relationship [{:}] ".format(
+                    srcNode, dstNode, name)
+                error += "exists from {:} -> {:}".format(srcNode, dstNode)
+                raise Exception(error)
+
         else:
             raise Exception("Nodes not found in database", srcNode, dstNode)
 
@@ -221,7 +197,8 @@ class GraphDB:
             return rels
 
         else:
-            raise Exception("Node", name, "not found in database")
+            error = "Node {:} not found in database".format(name)
+            raise Exception(error)
 
 
     def traverse(self, startNode, endNode, allowRels=None, algo="BFS"):
@@ -294,7 +271,7 @@ class GraphDB:
 
                     # Only searching for loops, and loop found
                     if hasloop and adjacent in visited:
-                        return(True, self._getPath(cnode, visited) + [[cnode, rname, startNode]])
+                        return(True, ["Loop Path TBD"])
 
                     # Newly discovered node, record in visited
                     elif adjacent not in visited:
