@@ -19,7 +19,7 @@ class GraphDB:
     """
 
     def __init__(self):
-        """ Initializes GraphDB Instance """
+        """ Initializes GraphDB, creates nodes dict() """
 
         # Nodes is a dictionary of all nodes in the DB
         self.nodes = dict()
@@ -29,17 +29,17 @@ class GraphDB:
         """
         Adds a node to the database
 
-        Inputs: name  - Uniqueue name of node
-                props - Optional node properties dictionary
+        Inputs: name => Unique name of node
+                props => Optional node properties dictionary
         """
 
         if name in self.nodes:
             raise Exception("Node" + name + "already exists, did you mean to call mergeNode?")
         else:
-            self.nodes[name] = dict()
 
-            # Initialize empty relationships dictionary
-            self.nodes[name]["_rels"] = dict()
+            # Initialize empty node and relationships dictionary
+            self.nodes[name] = dict()
+            self.nodes[name]["__rels"] = dict()
 
             # If optional properties defined, merge those with new node
             if props:
@@ -80,7 +80,7 @@ class GraphDB:
 
             # Only return public properties, underscored properties are hidden
             for p in self.nodes[name]:
-                if p[:1] != "_":
+                if p[:1] != "__":
                     props[p] = self.nodes[name][p]
 
             return props
@@ -103,13 +103,14 @@ class GraphDB:
         if set((srcNode, dstNode)).issubset(self.nodes):
 
             # Ensure relationship does not already exist
-            if name not in self.nodes[srcNode]["_rels"]:
+            if name not in self.nodes[srcNode]["__rels"]:
 
                 # Relationship is a dictionary object based on a (name, dstNode)
                 # tuple key between two nodes
-                rel = self.nodes[srcNode]["_rels"][(name, dstNode)] = dict()
-                rel["_dst"] = self.nodes[dstNode]
-                rel["_weight"] = weight
+                rel = self.nodes[srcNode]["__rels"][(name, dstNode)] = dict()
+                rel["__src"] = self.nodes[srcNode]
+                rel["__dst"] = self.nodes[dstNode]
+                rel["__weight"] = weight
 
                 # If optional properties defined, merge those with new relationship
                 if props:
@@ -139,8 +140,8 @@ class GraphDB:
         if set((srcNode, dstNode)).issubset(self.nodes):
 
             # Ensure Relationship Exists
-            if (name, dstNode) in self.nodes[srcNode]["_rels"]:
-                rel = self.nodes[srcNode]["_rels"][(name, dstNode)]
+            if (name, dstNode) in self.nodes[srcNode]["__rels"]:
+                rel = self.nodes[srcNode]["__rels"][(name, dstNode)]
 
                 for p in props:
                     rel[p] = props[p]
@@ -161,13 +162,13 @@ class GraphDB:
         if set((srcNode, dstNode)).issubset(self.nodes):
 
             # Ensure Relationship Exists
-            if (name, dstNode) in self.nodes[srcNode]["_rels"]:
-                rel = self.nodes[srcNode]["_rels"][(name, dstNode)]
+            if (name, dstNode) in self.nodes[srcNode]["__rels"]:
+                rel = self.nodes[srcNode]["__rels"][(name, dstNode)]
                 props = dict()
 
                 # Only return public properties, underscored properties are hidden
                 for p in rel:
-                    if p[:1] != "_":
+                    if p[:1] != "__":
                         props[p] = rel[p]
 
                 return props
@@ -192,7 +193,7 @@ class GraphDB:
             rels = []
 
             # Append each relationship tuple to rels list
-            for (relName, dstNode) in self.nodes[name]["_rels"]:
+            for (relName, dstNode) in self.nodes[name]["__rels"]:
                 rels.append((relName, dstNode))
 
             return rels
@@ -290,6 +291,21 @@ class GraphDB:
         # Node not found
         return(False, [])
 
+
+    def getPath(self, endNode, visited):
+        """ Returns a path from the parent node to the end node for use with BFS"""
+
+        cnode = endNode
+        path = []
+
+        while visited[cnode]["parent"] is not None:
+            path.append([visited[cnode]["parent"], visited[cnode]["rname"], cnode])
+            cnode = visited[cnode]["parent"]
+
+        # Return reversed path
+        return [hop for hop in path[::-1]]
+
+
     def _traverseDFS(self, startNode, endNode, allowRels=None):
         """
         Depth First Traversal of Graph searching for endNode from startNode
@@ -346,16 +362,4 @@ class GraphDB:
         # Node not found
         return(False, [])
 
-    def getPath(self, endNode, visited):
-        """ Returns a path from the parent node to the end node """
 
-        cnode = endNode
-        path = []
-
-        while visited[cnode]["parent"] is not None:
-            path.append([visited[cnode]["parent"], visited[cnode]["rname"], cnode])
-            cnode = visited[cnode]["parent"]
-
-        #path = path.reverse()
-        return [hop for hop in path[::-1]]
-        #return path
