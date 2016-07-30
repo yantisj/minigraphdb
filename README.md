@@ -110,7 +110,8 @@ MiniGraphDB was written to explore what would be required to create a Graph
 Database from scratch in Python3 using the standard libraries, with no prior
 knowledge about how a Graph Database should be implemented. It should be used
 for understanding potential implementations of Graph Databases only, and is not
-considered production ready.
+considered production ready. MiniGraphDB was written for clarity and
+understanding over performance.
 
 ## Expandibility of MiniGraphDB
 
@@ -173,14 +174,14 @@ relationships meet certain criteria, such as (==, !=, <, >, etc)
 It's possible to implement a subset of the Cypher query language to allow for
 easy graph queries. Cypher is an easy to use graph query language used by Neo4j,
 and is available open-source for all implementation of Graph Databases:
-http://www.opencypher.org
+[Open Cypher](http://www.opencypher.org)
 
 ### Optimization
 
 It's possible to cache traversals on graphs that do not change often. This could
 be accomplished with the @functools.lru_cache decorator along with a call to
 invalidate the cache as the graph changes. While there are many avenues of
-optimization, but none will add any clarity to MiniGraphDB.
+optimization, none will add clarity to MiniGraphDB.
 
 ## Contributors
 * Jonathan Yantis ([yantisj](https://github.com/yantisj))
