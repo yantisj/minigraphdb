@@ -200,7 +200,7 @@ class GraphDB:
             raise Exception("Node", name, "not found in database")
 
 
-    def traverse(self, startNode, endNode, rels=None, ttype="BFS"):
+    def traverse(self, startNode, endNode, allowRels=None, ttype="BFS"):
         """
         Traverse Graph, starting at startNode until endNode is found.
         Defaults to a Breadth First Search, but can also perform a
@@ -208,7 +208,7 @@ class GraphDB:
 
         Inputs: startNode - Start Traversal from this node
                 endNode   - Search for path to endNode
-                rels      - Optional List of relationship names to traverse
+                allowRels - Optional List of relationship names to traverse
                             None traverses all relationship names
                 ttype     - Type of search (BFS, DFS), defaults to BFS
 
@@ -219,11 +219,11 @@ class GraphDB:
         if set((startNode, endNode)).issubset(self.nodes):
 
             if ttype == "BFS":
-                return self._traverseBFS(startNode, endNode, rels=None)
+                return self._traverseBFS(startNode, endNode, allowRels=allowRels)
         else:
             raise Exception("Nodes", startNode, endNode, "not found in DB")
 
-    def _traverseBFS(self, startNode, endNode, rels=None):
+    def _traverseBFS(self, startNode, endNode, allowRels=None):
         """
         Breadth First Traversal of Graph searching for endNode, starting at startNode
 
@@ -244,10 +244,60 @@ class GraphDB:
         visited = dict()
 
         # Add startNode to visited along with distance and null parent value
+        visited[startNode] = dict()
         visited[startNode]["distance"] = 0
         visited[startNode]["parent"] = None
 
-        while Q.full():
+        # Classic BFS Algorithm, keep processing relationships until queue is empty
+        while not Q.empty():
 
+            # Dequeue Current Node
             cnode = Q.get()
-            print(cnode)
+
+            # make sure to visit each node in relationships from here
+            # rel => (name, dstNode)
+            for (rname, adjacent) in self.getRelationships(cnode):
+
+                # Make sure we are traversing allowed relationship types
+                if allowRels is None or rname in allowRels:
+
+
+                    if adjacent not in visited:
+                        visited[adjacent] = dict()
+                        visited[adjacent]["distance"] = visited[cnode]["distance"] + 1
+                        visited[adjacent]["parent"] = cnode
+                        visited[adjacent]["rname"] = rname
+
+                        if adjacent == endNode:
+                            return (True, self.getPath(endNode, visited))
+
+                        # New Node Found that's not endNode, enqueue it
+                        Q.put(adjacent)
+
+                    # startNode is equal to endNode and is adjacent
+                    elif adjacent == startNode == endNode:
+
+                        # Path to current node
+                        path = self.getPath(cnode, visited)
+
+                        # Append entry to startNode from current node
+                        path.append([cnode, rname, startNode])
+                        return(True, path)
+
+        # Node not found
+        return(False, [])
+
+
+    def getPath(self, endNode, visited):
+        """ Returns a path from the parent node to the end node """
+
+        cnode = endNode
+        path = []
+
+        while visited[cnode]["parent"] is not None:
+            path.append([visited[cnode]["parent"], visited[cnode]["rname"], cnode])
+            cnode = visited[cnode]["parent"]
+
+        #path = path.reverse()
+        return [hop for hop in path[::-1]]
+        #return path
