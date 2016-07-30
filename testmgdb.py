@@ -106,10 +106,10 @@ try:
 except Exception as e:
     print("Caught Exception:", e)
 
-print("\nRelationships from A: db.getRelationships(A)")
+print("\nOutgoing Relationships from A: db.getRelationships(A)")
 print(db.getRelationships("A"))
 
-print("\nRelationships from E: db.getRelationships(E)")
+print("\nOutgoing Relationships from E: db.getRelationships(E)")
 print(db.getRelationships("E"))
 
 print("\nBFS Traversal A -> E on Relationships [10G, 1G]:")

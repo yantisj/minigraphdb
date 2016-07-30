@@ -60,11 +60,11 @@ Relationship (D)-[e:1G]->(B) Property Dump: db.getRelProps("1G", "D", "B")
 Non-existent Relationship (A)-[e:1G]->(C) db.getRelProps(...) Dump:
 Caught Exception: Nodes A, C exist in database, but no relationship [1G] exists from A -> C
 
-Relationships from A: db.getRelationships(A)
-[('10G', 'G'), ('10G', 'B'), ('1G', 'D')]
+Outgoing Relationships from A: db.getRelationships(A)
+[('10G', 'B'), ('10G', 'G'), ('1G', 'D')]
 
-Relationships from E: db.getRelationships(E)
-[('1G', 'A'), ('10G', 'A')]
+Outgoing Relationships from E: db.getRelationships(E)
+[('10G', 'A'), ('1G', 'A')]
 
 BFS Traversal A -> E on Relationships [10G, 1G]:
 (True, [['A', '10G', 'B'], ['B', '1G', 'E']])
@@ -79,10 +79,10 @@ BFS Traversal F -> E on any Relationship Type:
 (True, [['F', '10G', 'A'], ['A', '10G', 'B'], ['B', '1G', 'E']])
 
 BFS Traversal A -> A on any Relationship Type (always SPF):
-(True, [['A', '10G', 'B'], ['B', '1G', 'E'], ['E', '1G', 'A']])
+(True, [['A', '10G', 'B'], ['B', '1G', 'E'], ['E', '10G', 'A']])
 
 DFS Traversal A -> A on any Relationship Type (path length varies):
-(True, [['A', '1G', 'D'], ['D', '10G', 'E'], ['E', '1G', 'A']])
+(True, [['A', '1G', 'D'], ['D', '1G', 'B'], ['B', '1G', 'E'], ['E', '10G', 'A']])
 
 BFS Traversal A -> A on 10G Links Only:
 (True, [['A', '10G', 'B'], ['B', '10G', 'C'], ['C', '10G', 'D'], ['D', '10G', 'E'], ['E', '10G', 'A']])
@@ -91,7 +91,7 @@ DFS Traversal A -> A on 1G Links Only:
 (True, [['A', '1G', 'D'], ['D', '1G', 'B'], ['B', '1G', 'E'], ['E', '1G', 'A']])
 
 Checking for Loops Starting at F: db.hasloop("F")
-(True, ['Loop Path TBD'])
+(True, ['Path TBD: Found loop around G'])
 
 Checking for Loops Starting at G: db.hasloop("G")
 (False, [])
@@ -99,17 +99,18 @@ Checking for Loops Starting at G: db.hasloop("G")
 Create new MiniGraphDB Instance (loopdb) A -> B -> C -> B for Testing hasloop()
 
 Checking for Loops Starting at A: loopdb.hasloop("A")
-(True, ['Loop Path TBD'])
+(True, ['Path TBD: Found loop around B'])
 
 Done for now! Please enjoy...
 ```
 
 ## Motivation
 
-MiniGraphDB was written to explore what would be required to create
-a Graph Database from scratch in Python3 using the standard libraries. It should
-be used for understanding potential implementations of Graph Databases only and
-is not considered production ready.
+MiniGraphDB was written to explore what would be required to create a Graph
+Database from scratch in Python3 using the standard libraries, with no prior
+knowledge about how a Graph Database should be implemented. It should be used
+for understanding potential implementations of Graph Databases only, and is not
+considered production ready.
 
 ## Expandibility of MiniGraphDB
 
@@ -124,21 +125,21 @@ should suffice.
 
 ### Custom Exceptions
 
-Currently, all exceptions are generic. Specific Exceptions
-should be added for such cases such as NoNodeFound or NoRelationshipFound.
+Currently, all exceptions are generic. Specific Exceptions should be added for
+cases such as NoNodeFound or NoRelationshipFound.
 
 ### Proper Test Suite
 
-MiniGraphDB could include py-tests to unit test and run larger tests on the
+MiniGraphDB could include py-tests to unit tests as well as larger tests on the
 database overall, but this would require installing modules outside of the
 standard libraries.
 
 ### Undirected Traversals
 
-It should be easy to reverse the graph traversal direction
-as well as add directionless graph traversal by adding an __inrels dictionary to
-each node to keep track of all incoming relationships. The traversal algorithms
-could be modified to traverse in either/both directions.
+It should be easy to reverse the graph traversal direction as well as add
+direction-less graph traversal by adding an __inrels dictionary to each node to
+keep track of all incoming relationships. The traversal algorithms could be
+modified to traverse in either/both directions.
 
 ### Weighted Traversals
 
@@ -147,8 +148,9 @@ implement a version of Dijkstra's algorithm.
 
 ### All Shortest Paths Traversal
 
-Combining the __weight variable above, a special type of traversal could be
-created to return all shortest paths instead of the first path found.
+Combining an implemetation of Dijkstra's algorithm above, a special type of
+traversal could be created to return all shortest paths, instead of only the
+first path found.
 
 ### hasloop() Path Representation
 
