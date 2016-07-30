@@ -36,7 +36,7 @@ db.addRelationship("1G", "A", "F", props={"MTU": "1500"})
 db.mergeRelProperties("10G", "A", "B", {"type": "Ethernet", "MTU": "9000"})
 
 
-## Various tests of mgdb
+## Various tests of graph database
 
 # Instantiate a pretty printer
 pp = pprint.PrettyPrinter(indent=2, width=4, depth=1)
@@ -62,18 +62,18 @@ print(db.traverse("A", "E", allowRels=["1G", "10G"]))
 print("\nTraverse using BFS from A -> D on relationship [10G] only")
 print(db.traverse("A", "D", allowRels=["10G"]))
 
-print("\nTraverse from F -> E (orphaned) on any relationship type")
-print(db.traverse("F", "E"))
-
-print("\nTraverse from E -> F on any relationship type")
+print("\nTraverse using BFS from E -> F on any relationship type")
 print(db.traverse("E", "F"))
 
-print("\nTraverse from A -> A on any relationship type")
+print("\nTraverse using BFS from F -> E (orphaned) on any relationship type")
+print(db.traverse("F", "E"))
+
+print("\nTraverse using BFS from A -> A on any relationship type")
 print(db.traverse("A", "A"))
 
-print("\nTraverse from A -> A on 10G links only")
+print("\nTraverse using BFS from A -> A on 10G links only")
 print(db.traverse("A", "A", allowRels=["10G"]))
 
-print("\nTraverse from A -> A on 1G links only")
+print("\nTraverse using BFS from A -> A on 1G links only")
 print(db.traverse("A", "A", allowRels=["1G"]))
 
