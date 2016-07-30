@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Mini Graph Database
+Minimal Graph Database (MGDB)
 
 Description: Implements a mini directed graph database in memory. Nodes are
 stored as dictionary data structures. Relationships are stored on each node as a
@@ -9,6 +9,7 @@ Both nodes and relationships can contain key value properties, stored in the
 dictionary data structure.
 """
 import queue
+from collections import defaultdict
 
 class GraphDB:
     """
@@ -200,17 +201,17 @@ class GraphDB:
             raise Exception("Node", name, "not found in database")
 
 
-    def traverse(self, startNode, endNode, allowRels=None, ttype="BFS"):
+    def traverse(self, startNode, endNode, allowRels=None, algo="BFS"):
         """
         Traverse Graph, starting at startNode until endNode is found.
         Defaults to a Breadth First Search, but can also perform a
         depth first search if desired.
 
-        Inputs: startNode - Start Traversal from this node
-                endNode   - Search for path to endNode
-                allowRels - Optional List of relationship names to traverse
-                            None traverses all relationship names
-                ttype     - Type of search (BFS, DFS), defaults to BFS
+        Inputs: startNode => Start Traversal from this node
+                endNode => Search for path to endNode
+                allowRels => Optional List of relationship names to traverse
+                             None traverses all relationship names
+                algo => Type of search (BFS, DFS), defaults to BFS
 
         Returns: tuple (found (bool), path (dict))
         """
@@ -218,14 +219,18 @@ class GraphDB:
         # Ensure both nodes exist in DB, they don't have to be connected
         if set((startNode, endNode)).issubset(self.nodes):
 
-            if ttype == "BFS":
+            if algo == "BFS":
                 return self._traverseBFS(startNode, endNode, allowRels=allowRels)
+            elif algo == "DFS":
+                return self._traverseDFS(startNode, endNode, allowRels=allowRels)
+            else:
+                raise Exception("Unknown Traversal Algorithm:", algo)
         else:
             raise Exception("Nodes", startNode, endNode, "not found in DB")
 
     def _traverseBFS(self, startNode, endNode, allowRels=None):
         """
-        Breadth First Traversal of Graph searching for endNode, starting at startNode
+        Breadth First Traversal of Graph searching for endNode from startNode
 
         Inputs:
             startNode => Start Traversal from this node
@@ -234,10 +239,10 @@ class GraphDB:
         Returns: tuple of (found [bool], path[list])
         """
 
-        # Initiate a queue with a sane maxsize value
-        Q = queue.LifoQueue(maxsize=10000)
+        # Initialize a queue with a sane maxsize value
+        Q = queue.Queue(maxsize=10000)
 
-        # Add startNode to Queue
+        # Add startNode to the Queue
         Q.put(startNode)
 
         # Create a dictionary of visited nodes
@@ -254,39 +259,92 @@ class GraphDB:
             # Dequeue Current Node
             cnode = Q.get()
 
-            # make sure to visit each node in relationships from here
+            # make sure to visit each node connected from here
             # rel => (name, dstNode)
             for (rname, adjacent) in self.getRelationships(cnode):
 
                 # Make sure we are traversing allowed relationship types
                 if allowRels is None or rname in allowRels:
 
-
+                    # Newly discovered node, record in visited
                     if adjacent not in visited:
                         visited[adjacent] = dict()
                         visited[adjacent]["distance"] = visited[cnode]["distance"] + 1
                         visited[adjacent]["parent"] = cnode
                         visited[adjacent]["rname"] = rname
 
+                        # Found the endNode
                         if adjacent == endNode:
                             return (True, self.getPath(endNode, visited))
 
-                        # New Node Found that's not endNode, enqueue it
+                        # Enqueue all nodes that are not endNode
                         Q.put(adjacent)
 
+                    # Check for loop back to startNode
                     # startNode is equal to endNode and is adjacent
                     elif adjacent == startNode == endNode:
 
-                        # Path to current node
-                        path = self.getPath(cnode, visited)
-
-                        # Append entry to startNode from current node
-                        path.append([cnode, rname, startNode])
-                        return(True, path)
+                        # Return True along with path (add last leg to current path)
+                        return(True, self.getPath(cnode, visited) + [cnode, rname, startNode])
 
         # Node not found
         return(False, [])
 
+    def _traverseDFS(self, startNode, endNode, allowRels=None):
+        """
+        Depth First Traversal of Graph searching for endNode from startNode
+
+        Inputs:
+            startNode => Start Traversal from this node
+            endNode => Search for this node
+
+        Returns: tuple of (found [bool], path[list])
+        """
+
+        # Initiate a stack with a sane maxsize value
+        S = queue.LifoQueue(maxsize=10000)
+
+        # Keep track of paths in dictionary
+        path = defaultdict(list)
+
+        # Add startNode to Queue
+        S.put(startNode)
+
+        # Create a dictionary of visited nodes
+        visited = dict()
+
+        # Classic DFS Algorithm, keep digging until stack is empty
+        while not S.empty():
+
+            # Pop Current Node
+            cnode = S.get()
+
+            # first time visiting cnode
+            if cnode not in visited and cnode not in S.queue:
+
+                visited[cnode] = dict()
+
+                # If we are starting out, make sure startNode has default populated values
+                if S.empty() and cnode == startNode:
+                    visited[cnode] = []
+
+            # Get all relationships of cnode to add destinations to stack
+            # rel => (name, dstNode)
+            for (rname, adjacent) in self.getRelationships(cnode):
+
+                # Make sure we are traversing allowed relationship types
+                if allowRels is None or rname in allowRels:
+
+                    if adjacent == endNode and len(path[cnode]):
+                        return(True, path[cnode] + [[cnode, rname, adjacent]])
+
+                    elif adjacent not in visited:
+                        S.put(adjacent)
+
+                        path[adjacent] = path[cnode] + [[cnode, rname, adjacent]]
+
+        # Node not found
+        return(False, [])
 
     def getPath(self, endNode, visited):
         """ Returns a path from the parent node to the end node """

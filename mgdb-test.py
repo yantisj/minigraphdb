@@ -59,6 +59,9 @@ print(db.getRelationships("F"))
 print("\nTraverse using BFS from A -> E on relationships [10G, 1G]")
 print(db.traverse("A", "E", allowRels=["1G", "10G"]))
 
+print("\nTraverse using DFS from A -> E on any relationship type")
+print(db.traverse("A", "E", algo="DFS"))
+
 print("\nTraverse using BFS from A -> D on relationship [10G] only")
 print(db.traverse("A", "D", allowRels=["10G"]))
 
@@ -68,12 +71,15 @@ print(db.traverse("E", "F"))
 print("\nTraverse using BFS from F -> E (orphaned) on any relationship type")
 print(db.traverse("F", "E"))
 
-print("\nTraverse using BFS from A -> A on any relationship type")
+print("\nTraverse using BFS from A -> A on any relationship type (always SPF)")
 print(db.traverse("A", "A"))
 
-print("\nTraverse using BFS from A -> A on 10G links only")
-print(db.traverse("A", "A", allowRels=["10G"]))
+print("\nTraverse using DFS from A -> A on any relationship type (path length varies)")
+print(db.traverse("A", "A", algo="DFS"))
 
-print("\nTraverse using BFS from A -> A on 1G links only")
-print(db.traverse("A", "A", allowRels=["1G"]))
+print("\nTraverse using BFS from A -> A on 10G links only")
+print(db.traverse("A", "A", allowRels=["10G"], algo="DFS"))
+
+print("\nTraverse using DFS from A -> A on 1G links only")
+print(db.traverse("A", "A", allowRels=["1G"], algo="DFS"))
 
