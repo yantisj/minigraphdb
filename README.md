@@ -299,4 +299,4 @@ of this implementation.
 * Jonathan Yantis ([yantisj](https://github.com/yantisj))
 
 ## License
-NetGrph is licensed under the GNU AGPLv3 License.
+MiniGraphDB is licensed under the GNU AGPLv3 License.
